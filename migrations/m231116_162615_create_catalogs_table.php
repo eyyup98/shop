@@ -3,20 +3,19 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%users}}`.
+ * Handles the creation of table `{{%catalogs}}`.
  */
-class m231116_150204_create_users_table extends Migration
+class m231116_162615_create_catalogs_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->createTable('{{%users}}', [
+        $this->createTable('{{%catalogs}}', [
             'id' => $this->primaryKey(),
             'name' => $this->string(),
-            'login' => $this->string()->notNull(),
-            'password' => $this->string()->notNull(),
+            'active' => $this->boolean()->defaultValue(true),
             'created_at' => $this->dateTime(),
             'updated_at' => $this->dateTime(),
         ]);
@@ -27,6 +26,6 @@ class m231116_150204_create_users_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%users}}');
+        $this->dropTable('{{%catalogs}}');
     }
 }
