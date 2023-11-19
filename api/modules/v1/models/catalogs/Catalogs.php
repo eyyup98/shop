@@ -48,4 +48,13 @@ class Catalogs extends BaseActiveRecord
             'updated_at' => 'Updated At',
         ];
     }
+
+    public function fields()
+    {
+        return [
+            'id',
+            'name',
+            'active',
+        ];
+    }
 }

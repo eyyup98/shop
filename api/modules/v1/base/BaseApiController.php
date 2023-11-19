@@ -5,7 +5,7 @@ namespace app\api\modules\v1\base;
 
 
 use app\api\modules\v1\helpers\ExceptionHelper;
-use Exception;
+use app\api\modules\v1\models\users\AccessToken;
 use JetBrains\PhpStorm\ArrayShape;
 use Yii;
 use yii\base\InvalidConfigException;
@@ -18,9 +18,6 @@ use yii\web\Response;
 
 class BaseApiController extends ActiveController
 {
-    public int $user_id;
-    public int $user_shop_id;
-
     /**
      * @throws HttpException
      */
@@ -28,8 +25,6 @@ class BaseApiController extends ActiveController
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
         Yii::$app->response->charset = 'UTF-8';
-
-//        $this->checkToken();
 
         parent::__construct($id, $module, $config);
     }
@@ -143,31 +138,12 @@ class BaseApiController extends ActiveController
             $json = $this->postQueryParams();
         }
 
-        try {
+        if (!empty($json['token']))
+            $accessToken = AccessToken::findOne(['token' => $json['token']]);
 
-            $auth = [
-                'action' => 'checkToken',
-                'token' => $json['token'],
-                'shop_id' => $json['shop_id']
-            ];
-
-            $client = new BaseClient();
-            $res = $client->request(
-                "POST",
-                require __DIR__ . "/../../../../config/authTokenUrl.php",
-                [
-                    'body' => json_encode($auth)
-                ]
-            );
-            $content = json_decode((string)$res->getBody(), true);
-        } catch (Exception) {}
-
-        if (empty($content['user_id']) || empty($content['user_shop_id'])) {
-            throw new HttpException(401, '401 Unauthorized', 401);
+        if (empty($accessToken) && Yii::$app->request->getMethod() != 'GET') {
+            throw new HttpException(401, Yii::$app->request->getMethod(), 401);
         }
-
-        $this->user_id = $content['user_id'];
-        $this->user_shop_id = $content['user_shop_id'];
     }
 
     private function postQueryParams()
@@ -213,5 +189,17 @@ class BaseApiController extends ActiveController
                 ]
             ]
         ];
+    }
+
+    /**
+     * @throws HttpException
+     */
+    public function afterAction($action, $result)
+    {
+        $return = parent::afterAction($action, $result);
+
+        $this->checkToken();
+
+        return $return;
     }
 }

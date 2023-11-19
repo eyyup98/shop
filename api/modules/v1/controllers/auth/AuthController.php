@@ -3,15 +3,18 @@
 namespace app\api\modules\v1\controllers\auth;
 
 use app\api\modules\v1\base\BaseApiController;
+use yii\rest\ActiveController;
+use yii\web\HttpException;
 use app\api\modules\v1\models\users\AccessToken;
 use app\api\modules\v1\models\users\Users;
 use Throwable;
 use Yii;
 use yii\db\StaleObjectException;
+use yii\web\Response;
 
-class AuthController extends BaseApiController
+class AuthController extends ActiveController
 {
-    public $modelClass = Users::class;
+    public $modelClass = AccessToken::class;
 
     /**
      * @throws Throwable
@@ -24,7 +27,7 @@ class AuthController extends BaseApiController
         $user = Users::findOne(['login' => $rawBody['login'], 'password' => $rawBody['password']]);
 
         if (empty($user)) {
-            return self::createResponse(401, 'Не верный логин или пароль');
+            throw new HttpException(401, "Не верный логин или пароль", 401);
         }
 
         $accessToken = AccessToken::findOne(['user_id' => $user->id]);
@@ -47,8 +50,10 @@ class AuthController extends BaseApiController
         );
 
         if (!$accessToken->save()) {
-            return self::createResponse(401, json_encode($accessToken->errors));
+            throw new HttpException(401, json_encode($accessToken->errors), 401);
         }
+
+        Yii::$app->response->format = Response::FORMAT_JSON;
 
         return ['token' => $accessToken->token];
     }
