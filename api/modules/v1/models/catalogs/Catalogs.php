@@ -29,7 +29,7 @@ class Catalogs extends BaseActiveRecord
     public function rules()
     {
         return [
-            [['active'], 'integer'],
+//            [['active'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['name'], 'string', 'max' => 255],
         ];

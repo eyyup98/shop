@@ -14,7 +14,10 @@ class CatalogsController extends BaseApiController
 
     function actionIndex($id = null)
     {
-        return Catalogs::find()->all();
+        if (!empty($id))
+            return Catalogs::findOne($id);
+        else
+            return Catalogs::find()->all();
     }
 
     /**
@@ -33,6 +36,9 @@ class CatalogsController extends BaseApiController
                 return self::createResponse(400, 'Каталог не найден');
             }
         } else {
+            if (Catalogs::findOne(['name' => $params['name']]))
+                return self::createResponse(400, 'Каталог уже существует');
+
             $catalogs = new Catalogs();
         }
 
@@ -41,9 +47,13 @@ class CatalogsController extends BaseApiController
 
         if (!$catalogs->save()) {
             return self::createResponse(400, json_encode($catalogs->errors));
-        } else {
-            return self::createResponse(204);
         }
+
+//        if (!empty($id)) {
+        return self::createResponse(204);
+//        } else {
+//            return $catalogs;
+//        }
     }
 
     /**
