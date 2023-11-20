@@ -7,6 +7,7 @@ use app\api\modules\v1\models\catalogs\Catalogs;
 use Throwable;
 use Yii;
 use yii\db\StaleObjectException;
+use yii\db\IntegrityException;
 
 class CatalogsController extends BaseApiController
 {
@@ -70,8 +71,14 @@ class CatalogsController extends BaseApiController
         if (empty($delete))
             return self::createResponse(400, 'Объект не найден');
 
-        if (!$delete->delete())
-            return self::createResponse(400, json_encode($delete->errors));
+        try {
+            if (!$delete->delete())
+                return self::createResponse(400, json_encode($delete->errors));
+        } catch (IntegrityException $e) {
+            if ($e->getCode() == 23000) {
+                return self::createResponse(400, 'У этого каталога есть группы. Сперва удалите их');
+            }
+        }
 
         return self::createResponse(204);
     }
