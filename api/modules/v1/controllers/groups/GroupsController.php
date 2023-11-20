@@ -72,15 +72,26 @@ class GroupsController extends BaseApiController
         $groups->name = $params['name'];
         $groups->active = $params['active'];
 
+        $catalogActive = Catalogs::findOne($groups->catalog_id)->active;
+
+        if ($catalogActive == false && $catalogActive != $groups->active)
+            return self::createResponse(400, 'Сперва измените активность в каталоге');
+
+        if (!empty($groups->parent_id)) {
+            $groupActive = Groups::findOne($groups->parent_id)->active;
+
+            if ($groupActive == false && $groupActive != $groups->active)
+                return self::createResponse(400, 'Сперва измените активность в группы');
+        }
+
         if (!$groups->save()) {
             return self::createResponse(400, json_encode($groups->errors));
         }
 
-//        if (!empty($id)) {
+        if (empty($groups->parent_id))
+            Groups::updateAll(['active' => $groups->active], ['parent_id' => $groups->id]);
+
         return self::createResponse(204);
-//        } else {
-//            return $groups;
-//        }
     }
 
     /**

@@ -4,6 +4,7 @@ namespace app\api\modules\v1\controllers\catalogs;
 
 use app\api\modules\v1\base\BaseApiController;
 use app\api\modules\v1\models\catalogs\Catalogs;
+use app\api\modules\v1\models\groups\Groups;
 use Throwable;
 use Yii;
 use yii\db\StaleObjectException;
@@ -46,15 +47,14 @@ class CatalogsController extends BaseApiController
         $catalogs->name = $params['name'];
         $catalogs->active = $params['active'];
 
+
         if (!$catalogs->save()) {
             return self::createResponse(400, json_encode($catalogs->errors));
         }
 
-//        if (!empty($id)) {
+        Groups::updateAll(['active' => $catalogs->active], ['catalog_id' => $catalogs->id]);
+
         return self::createResponse(204);
-//        } else {
-//            return $catalogs;
-//        }
     }
 
     /**
