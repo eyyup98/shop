@@ -32,15 +32,37 @@ class CatalogsController extends BaseApiController
             if (empty($catalogs)) {
                 return self::createResponse(400, 'Каталог не найден');
             }
-
-            $catalogs->name = $params['name'];
-            $catalogs->active = $params['active'];
-
-            if (!$catalogs->save()) {
-                return self::createResponse(400, json_encode($catalogs->errors));
-            }
         } else {
-
+            $catalogs = new Catalogs();
         }
+
+        $catalogs->name = $params['name'];
+        $catalogs->active = $params['active'];
+
+        if (!$catalogs->save()) {
+            return self::createResponse(400, json_encode($catalogs->errors));
+        } else {
+            return self::createResponse(204);
+        }
+    }
+
+    /**
+     * @throws StaleObjectException
+     * @throws Throwable
+     */
+    function actionDelete($id = null)
+    {
+        if (empty($id))
+            return self::createResponse(400, 'Необходимо указать объект');
+
+        $delete = Catalogs::findOne($id);
+
+        if (empty($delete))
+            return self::createResponse(400, 'Объект не найден');
+
+        if (!$delete->delete())
+            return self::createResponse(400, json_encode($delete->errors));
+
+        return self::createResponse(204);
     }
 }

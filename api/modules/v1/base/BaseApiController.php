@@ -140,7 +140,7 @@ class BaseApiController extends ActiveController
         if (!empty($json['token']))
             $accessToken = AccessToken::findOne(['token' => $json['token']]);
 
-        if (empty($accessToken) && Yii::$app->request->getMethod() != 'GET') {
+        if (empty($accessToken)) {
             throw new HttpException(401, Yii::$app->request->getMethod(), 401);
         }
     }
