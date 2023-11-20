@@ -3,7 +3,6 @@
 namespace app\api\modules\v1\controllers\auth;
 
 use app\api\modules\v1\base\BaseApiController;
-use yii\rest\ActiveController;
 use yii\web\HttpException;
 use app\api\modules\v1\models\users\AccessToken;
 use app\api\modules\v1\models\users\Users;
@@ -12,9 +11,15 @@ use Yii;
 use yii\db\StaleObjectException;
 use yii\web\Response;
 
-class AuthController extends ActiveController
+class AuthController extends BaseApiController
 {
     public $modelClass = AccessToken::class;
+
+    public function __construct($id, $module, $config = [])
+    {
+        $this->needCheckToken = false;
+        parent::__construct($id, $module, $config);
+    }
 
     /**
      * @throws Throwable

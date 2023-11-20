@@ -18,9 +18,8 @@ use yii\web\Response;
 
 class BaseApiController extends ActiveController
 {
-    /**
-     * @throws HttpException
-     */
+    public bool $needCheckToken = true;
+
     public function __construct($id, $module, $config = [])
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
@@ -198,7 +197,8 @@ class BaseApiController extends ActiveController
     {
         $return = parent::afterAction($action, $result);
 
-        $this->checkToken();
+        if ($this->needCheckToken)
+            $this->checkToken();
 
         return $return;
     }
