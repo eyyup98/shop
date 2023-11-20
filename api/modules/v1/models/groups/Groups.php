@@ -68,4 +68,20 @@ class Groups extends BaseActiveRecord
     {
         return $this->hasOne(Catalogs::class, ['id' => 'catalog_id']);
     }
+
+    public function fields()
+    {
+        return array_merge(
+            parent::fields(),
+            [
+                'view_child' => function() {return false;},
+                'parent_name' => function($model) {
+                    return Groups::findOne($model->parent_id)->name ?? null;
+                },
+                'catalog_name' => function($model) {
+                    return Catalogs::findOne($model->catalog_id)->name;
+                }
+            ]
+        );
+    }
 }

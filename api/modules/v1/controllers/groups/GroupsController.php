@@ -18,15 +18,23 @@ class GroupsController extends BaseApiController
         if (!empty($id))
             return Groups::find()->where(['id' => $id, 'parent_id' => null])->one();
         else
-            return Groups::find()->where(['parent_id' => null])->all();
+            return Groups::find()->with('catalog')->where(['parent_id' => null])->all();
     }
 
     function actionChilds($id = null)
     {
         if (!empty($id))
             return Groups::find()->where(['id' => $id])->andWhere(['not', ['parent_id' => null]])->one();
-        else
-            return Groups::find()->where(['not', ['parent_id' => null]])->all();
+        else {
+            $groups = Groups::find()->where(['not', ['parent_id' => null]])->all();
+            $newGroups = [];
+
+            foreach ($groups as $group) {
+                $newGroups[$group['parent_id']][] = $group;
+            }
+
+            return $newGroups;
+        }
     }
 
     /**
@@ -85,6 +93,12 @@ class GroupsController extends BaseApiController
             return self::createResponse(400, 'Необходимо указать объект');
 
         $delete = Groups::findOne($id);
+
+        $child = Groups::find()->where(['parent_id' => $id])->asArray()->all();
+
+        if (count($child) > 0) {
+            return self::createResponse(400, 'У этой группы есть подгруппы. Сперва удалите их');
+        }
 
         if (empty($delete))
             return self::createResponse(400, 'Объект не найден');
