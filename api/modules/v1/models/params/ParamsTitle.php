@@ -93,7 +93,7 @@ class ParamsTitle extends BaseActiveRecord
 
     public function fields()
     {
-        $params = Params::find()->where(['title_id' => $this->id])->asArray()->all();
+        $params = Params::find()->select(['id', 'name', 'title_id'])->where(['title_id' => $this->id])->asArray()->all();
         $groupChild = Groups::find()->where(['id' => $this->group_id])->andWhere(['not', ['parent_id' => null]])->one();
         $groupParent = Groups::findOne(['id' => ($groupChild->parent_id ?? $this->group_id)]);
         $catalog = Catalogs::findOne($groupParent->catalog_id);

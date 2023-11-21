@@ -32,28 +32,24 @@ class ParamsController extends BaseApiController
         $rawBody = json_decode(Yii::$app->request->rawBody, true);
         $params = $rawBody['params'];
 
-        if (!empty($id)) {
-            $catalogs = Catalogs::findOne($id);
+        foreach ($params as $param) {
+            if (!empty($param['id'])) {
+                $paramsDb= Params::findOne($param['id']);
 
-            if (empty($catalogs)) {
-                return self::createResponse(400, 'Каталог не найден');
+                if (empty($paramsDb)) {
+                    return self::createResponse(400, 'Параметр не найден');
+                }
+            } else {
+                $paramsDb = new Params();
+                $paramsDb->title_id = $param['title_id'];
             }
-        } else {
-            if (Catalogs::findOne(['name' => $params['name']]))
-                return self::createResponse(400, 'Каталог уже существует');
 
-            $catalogs = new Catalogs();
+            $paramsDb->name = $param['name'];
+
+            if (!$paramsDb->save()) {
+                return self::createResponse(400, json_encode($paramsDb->errors));
+            }
         }
-
-        $catalogs->name = $params['name'];
-        $catalogs->active = $params['active'];
-
-
-        if (!$catalogs->save()) {
-            return self::createResponse(400, json_encode($catalogs->errors));
-        }
-
-        Groups::updateAll(['active' => $catalogs->active], ['catalog_id' => $catalogs->id]);
 
         return self::createResponse(204);
     }
