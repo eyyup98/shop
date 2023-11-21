@@ -25,16 +25,8 @@ class GroupsController extends BaseApiController
     {
         if (!empty($id))
             return Groups::find()->where(['id' => $id])->andWhere(['not', ['parent_id' => null]])->one();
-        else {
-            $groups = Groups::find()->where(['not', ['parent_id' => null]])->all();
-            $newGroups = [];
-
-            foreach ($groups as $group) {
-                $newGroups[$group['parent_id']][] = $group;
-            }
-
-            return $newGroups;
-        }
+        else
+            return Groups::find()->where(['not', ['parent_id' => null]])->all();
     }
 
     /**

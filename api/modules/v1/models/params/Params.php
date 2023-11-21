@@ -3,6 +3,8 @@
 namespace app\api\modules\v1\models\params;
 
 use app\api\modules\v1\base\BaseActiveRecord;
+use app\api\modules\v1\models\catalogs\Catalogs;
+use app\api\modules\v1\models\groups\Groups;
 use yii\db\ActiveQuery;
 
 /**
