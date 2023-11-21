@@ -31,6 +31,7 @@ class ParamsController extends BaseApiController
     {
         $rawBody = json_decode(Yii::$app->request->rawBody, true);
         $params = $rawBody['params'];
+        $delete = $rawBody['delete'];
 
         foreach ($params as $param) {
             if (!empty($param['id'])) {
@@ -51,29 +52,11 @@ class ParamsController extends BaseApiController
             }
         }
 
-        return self::createResponse(204);
-    }
-
-    /**
-     * @throws StaleObjectException
-     * @throws Throwable
-     */
-    function actionDelete($id = null)
-    {
-        if (empty($id))
-            return self::createResponse(400, 'Необходимо указать объект');
-
-        $delete = Params::findOne($id);
-
-        if (empty($delete))
-            return self::createResponse(400, 'Объект не найден');
-
-        try {
-            if (!$delete->delete())
-                return self::createResponse(400, json_encode($delete->errors));
-        } catch (IntegrityException $e) {
-            if ($e->getCode() == 23000) {
-                return self::createResponse(400, 'У этого каталога есть группы. Сперва удалите их');
+        if (!empty('delete')) {
+            foreach ($delete as $item) {
+                if (!Params::findOne($item)->delete()) {
+                    return self::createResponse(400, 'Ошибка при удалении');
+                }
             }
         }
 
