@@ -108,7 +108,7 @@ class ParamsTitle extends BaseActiveRecord
                 'group_parent_name' => function() use ($groupParent) { return $groupParent->name; },
                 'group_child_id' => function() use ($groupChild) { return $groupChild->id ?? null; },
                 'group_child_name' => function() use ($groupChild) { return $groupChild->name ?? null; },
-                'params' => function() use ($params) { return $params; },
+                'params' => function() use ($params) { return $params ?? []; },
                 'group_active' => function() use ($groupActive) { return $groupActive; },
                 'view_params' => function() { return false; }
             ]

@@ -52,7 +52,7 @@ class ParamsController extends BaseApiController
             }
         }
 
-        if (!empty('delete')) {
+        if (!empty($delete)) {
             foreach ($delete as $item) {
                 if (!Params::findOne($item)->delete()) {
                     return self::createResponse(400, 'Ошибка при удалении');

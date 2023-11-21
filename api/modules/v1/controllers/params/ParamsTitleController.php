@@ -47,12 +47,10 @@ class ParamsTitleController extends BaseApiController
         $paramsTitle->name = $params['name'];
         $paramsTitle->catalog_id = $params['catalog_id'];
 
-        $checkGroup = Groups::findOne(['parent_id' => $params['group_parent_id'], 'id' => $params['group_child_id']]);
-
-        if (empty($checkGroup)) {
+        if (empty($params['group_child_id'])) {
+            if (!empty(Groups::findOne(['parent_id' => $params['group_parent_id']])))
+                return self::createResponse(400, 'У этой группы есть подгруппа. Необходимо выбрать подгруппу');
             $paramsTitle->group_id = $params['group_parent_id'];
-            if (empty(Groups::findOne(['id' => $params['group_parent_id'], 'parent_id' => null])))
-                return self::createResponse(400, 'Ошибка при сохранении');
         } else
             $paramsTitle->group_id = $params['group_child_id'];
 
@@ -60,7 +58,7 @@ class ParamsTitleController extends BaseApiController
             return self::createResponse(400, json_encode($paramsTitle->errors));
         }
 
-        return self::createResponse(204);
+        return ['title_id' => $paramsTitle->id];
     }
 
     /**

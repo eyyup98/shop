@@ -37,10 +37,11 @@ class GroupsController extends BaseApiController
     {
         $rawBody = json_decode(Yii::$app->request->rawBody, true);
         $params = $rawBody['params'];
+        $delete = $rawBody['delete'];
 
-        $catalog_id = Catalogs::findOne($params['catalog_id']);
+        $catalog = Catalogs::findOne($params['catalog_id']);
 
-        if (empty($catalog_id))
+        if (empty($catalog))
             return self::createResponse(400, 'Каталог не найден');
 
         if (!empty($id)) {
@@ -50,38 +51,49 @@ class GroupsController extends BaseApiController
                 return self::createResponse(400, 'Группа не найдена');
             }
         } else {
-            if (
-                Groups::findOne(['catalog_id' => $catalog_id->id,
-                    'parent_id' => $params['parent_id'], 'name' => $params['name']])
-            )
-                return self::createResponse(400, 'Группа уже существует');
-
             $groups = new Groups();
         }
 
-        $groups->catalog_id = $catalog_id->id;
+        $groups->catalog_id = $catalog->id;
         $groups->parent_id = $params['parent_id'];
         $groups->name = $params['name'];
         $groups->active = $params['active'];
 
-        $catalogActive = Catalogs::findOne($groups->catalog_id)->active;
-
-        if ($catalogActive == false && $catalogActive != $groups->active)
+        if ($catalog->active == false && $catalog->active != $groups->active)
             return self::createResponse(400, 'Сперва измените активность в каталоге');
-
-        if (!empty($groups->parent_id)) {
-            $groupActive = Groups::findOne($groups->parent_id)->active;
-
-            if ($groupActive == false && $groupActive != $groups->active)
-                return self::createResponse(400, 'Сперва измените активность в группы');
-        }
 
         if (!$groups->save()) {
             return self::createResponse(400, json_encode($groups->errors));
         }
 
-        if (empty($groups->parent_id))
-            Groups::updateAll(['active' => $groups->active], ['parent_id' => $groups->id]);
+        foreach ($params['subgroups'] as $item) {
+            if (!empty($item['id'])) {
+                $subgroup = Groups::findOne($item['id']);
+                if (empty($subgroup)) {
+                    return self::createResponse(400, 'Подгруппа не найдена');
+                }
+            } else
+                $subgroup = new Groups();
+
+            $subgroup->catalog_id = $catalog->id;
+            $subgroup->name = $item['name'];
+            $subgroup->parent_id = $groups->id;
+            $subgroup->active = $groups->active;
+
+            if (!$subgroup->save()) {
+                return self::createResponse(400, json_encode($subgroup->errors));
+            }
+        }
+
+        Groups::updateAll(['active' => $groups->active], ['parent_id' => $groups->id]);
+
+        if (!empty($delete)) {
+            foreach ($delete as $item) {
+                if (!Groups::findOne($item)->delete()) {
+                    return self::createResponse(400, 'Ошибка при удалении');
+                }
+            }
+        }
 
         return self::createResponse(204);
     }

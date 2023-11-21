@@ -75,12 +75,14 @@ class Groups extends BaseActiveRecord
             parent::fields(),
             [
                 'view_child' => function() {return false;},
-                'parent_name' => function($model) {
-                    return Groups::findOne($model->parent_id)->name ?? null;
+                'subgroups' => function($model) {
+                    return Groups::find()->select(['active', 'catalog_id', 'id', 'name', 'parent_id'])
+                        ->where(['parent_id' => $model->id])->asArray()->all() ?? [];
                 },
                 'catalog_name' => function($model) {
                     return Catalogs::findOne($model->catalog_id)->name;
                 }
+
             ]
         );
     }
