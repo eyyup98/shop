@@ -18,7 +18,6 @@ class m231124_124334_create_products_table extends Migration
             'catalog_id' => $this->integer()->notNull(),
             'group_id' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
-            'code' => $this->integer()->notNull()->check('code > 1000000'),
             'price' => $this->decimal(10, 2),
             'discount' => $this->decimal(10, 2),
             'active' => $this->boolean()->defaultValue(true),

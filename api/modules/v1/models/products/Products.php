@@ -14,7 +14,6 @@ use yii\db\ActiveQuery;
  * @property int $catalog_id
  * @property int $group_id
  * @property string $name
- * @property int $code
  * @property float|null $price
  * @property float|null $discount
  * @property int|null $active
@@ -40,8 +39,8 @@ class Products extends BaseActiveRecord
     public function rules()
     {
         return [
-            [['catalog_id', 'group_id', 'name', 'code'], 'required'],
-            [['catalog_id', 'group_id', 'code'/*, 'active'*/], 'integer'],
+            [['catalog_id', 'group_id', 'name'], 'required'],
+            [['catalog_id', 'group_id'/*, 'active'*/], 'integer'],
             [['price', 'discount'], 'number'],
             [['created_at', 'updated_at'], 'safe'],
             [['name'], 'string', 'max' => 255],
@@ -60,7 +59,6 @@ class Products extends BaseActiveRecord
             'catalog_id' => 'Catalog ID',
             'group_id' => 'Group ID',
             'name' => 'Name',
-            'code' => 'Code',
             'price' => 'Price',
             'discount' => 'Discount',
             'active' => 'Active',

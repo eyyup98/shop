@@ -1,9 +1,10 @@
 <?php
 
-namespace app\api\modules\v1\controllers\params;
+namespace app\api\modules\v1\controllers\products;
 
 use app\api\modules\v1\base\BaseApiController;
 use app\api\modules\v1\models\products\Products;
+use app\api\modules\v1\models\products\ProductsParams;
 use Exception;
 use Throwable;
 use Yii;
@@ -30,29 +31,42 @@ class ProductsController extends BaseApiController
         $rawBody = json_decode(Yii::$app->request->rawBody, true);
         $params = $rawBody['params'];
 
-        foreach ($params as $param) {
-            if (!empty($id)) {
-                $products= Products::findOne($id);
+        if (!empty($id)) {
+            $products= Products::findOne($id);
 
-                if (empty($products)) {
-                    return self::createResponse(400, 'Параметр не найден');
-                }
-            } else {
-                $products = new Products();
+            if (empty($products)) {
+                return self::createResponse(400, 'Объект не найден');
             }
-            $products->catalog_id = $param['catalog_id'];
-            $products->group_id = $param['group_id'];
-            $products->name = $param['name'];
-            $products->price = $param['price'];
-            $products->discount = $param['discount'];
-            $products->active = $param['active'];
-
-            if (!$products->save()) {
-                return self::createResponse(400, json_encode($products->errors));
-            }
+        } else {
+            $products = new Products();
         }
 
-        return self::createResponse(204);
+        $products->catalog_id = $params['catalog_id'];
+        $products->group_id = !empty($params['subgroup_id']) ? $params['subgroup_id'] : $params['group_id'];
+        $products->name = $params['name'];
+        $products->price = $params['price'];
+        $products->discount = $params['discount'];
+        $products->active = $params['active'];
+
+        if (!$products->save()) {
+            return self::createResponse(400, json_encode($products->errors));
+        }
+
+        foreach ($params['params'] as $param) {
+            $productParam = ProductsParams::findOne(['param_id' => $param['param_id'], 'product_id' => $products->id]);
+
+            if (empty($productParam)) {
+                $productParam = new ProductsParams();
+                $productParam->param_id = $param['param_id'];
+                $productParam->product_id = $products->id;
+            }
+
+            $productParam->name = $param['name'];
+            if (!$productParam->save())
+                return self::createResponse(400, json_encode($products->errors));
+        }
+
+        return ['product_id' => $products->id];
     }
 
     /**

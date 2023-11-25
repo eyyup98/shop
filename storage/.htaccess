@@ -1,0 +1,29 @@
+#RewriteEngine on
+#RewriteCond %{REQUEST_FILENAME} !-d
+#RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteRule . index.php [L]
+
+#<Directory "C:/OSPanel/domains/shop_2/shop_back/storage/images">
+##<Directory "/images">
+#  AllowOverride All
+#  Require all granted
+#</Directory>
+
+# включаем механизм преобразования
+RewriteEngine On
+# устанавливаем базовый URL для преобразований
+RewriteBase /images
+# здесь делаем исключения для нашего фавикона, файла управления индексацией robots.txt и для файла со стилями
+RewriteCond %{REQUEST_FILENAME} !\.jpg
+#RewriteCond %{REQUEST_FILENAME} !\.ico|\.txt|\.css|\.jpg
+# абсолютно все остальные запросы ведём на файл index.php
+RewriteRule .* index.php [L,QSA]
+
+
+
+
+
+
+
+
+

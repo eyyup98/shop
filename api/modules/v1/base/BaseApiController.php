@@ -150,7 +150,7 @@ class BaseApiController extends ActiveController
         $pathInfo = Yii::$app->getRequest()->pathInfo;
         $pathInfo = explode('/', $pathInfo);
 
-        if (!empty($pathInfo[2]) && $pathInfo[2] == 'uploaded') {
+        if (!empty($pathInfo[1]) && $pathInfo[1] == 'products-img') {
             return Yii::$app->request->get();
         } else {
             return json_decode(file_get_contents('php://input'), true);
