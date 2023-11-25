@@ -4,6 +4,7 @@ namespace app\api\modules\v1\controllers\products;
 
 use app\api\modules\v1\base\BaseApiController;
 use app\api\modules\v1\models\products\Products;
+use app\api\modules\v1\models\products\ProductsImg;
 use app\api\modules\v1\models\products\ProductsParams;
 use Exception;
 use Throwable;
@@ -18,8 +19,15 @@ class ProductsController extends BaseApiController
     {
         if (!empty($id))
             return Products::findOne($id);
-        else
-            return Products::find()->all();
+        else {
+            $products = Products::find()->select(['id', 'name', 'price', 'discount'])->asArray()->all();
+
+            foreach ($products as &$product) {
+                $product['img'] = ProductsImg::findOne(['product_id' => $product['id']])->img_src ?? null;
+            }
+
+            return $products;
+        }
     }
 
     /**
