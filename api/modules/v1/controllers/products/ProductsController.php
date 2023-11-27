@@ -3,6 +3,7 @@
 namespace app\api\modules\v1\controllers\products;
 
 use app\api\modules\v1\base\BaseApiController;
+use app\api\modules\v1\models\catalogs\Catalogs;
 use app\api\modules\v1\models\groups\Groups;
 use app\api\modules\v1\models\params\Params;
 use app\api\modules\v1\models\params\ParamsTitle;
@@ -36,33 +37,40 @@ class ProductsController extends BaseApiController
                 $products['subgroup_id'] = $subgroup->id;
             }
 
+            $products['catalog_name'] = Catalogs::findOne($products['catalog_id'])->name;
+            $products['group_name'] = Groups::findOne($products['group_id'])->name;
+            $products['subgroup_name'] = Groups::findOne($products['subgroup_id'])->name ?? null;
+//print_r('catalog_id' . $products['catalog_id']);
+//            die();
+
             $title = ParamsTitle::find()->select(['id', 'name'])
-                ->where(['catalog_id' => $products['catalog_id'], 'group_id' => $subgroup->id ?? $subgroup->parent_id])
+                ->where(['catalog_id' => $products['catalog_id']])
             ->asArray()->all();
+//            print_r($title);
+//            die();
 
             foreach ($title as $item) {
-                $return['name'] = $item;
+                $return['name'] = $item['name'];
+//                print_r($return);
                 $params = Params::find()->select(['id', 'name'])
                     ->where(['title_id' => $item['id']])->asArray()->all();
-
-//                print_r($item);
 //                print_r($params);
 
                 foreach ($params as $param) {
-                    $return['params'] = [
-                        'params' => array_merge(
-                            $param,
-                            [
-                                'value' => ProductsParams::findOne(['param_id' => $param['id'],
-                                    'product_id' => $products['id']])->name ?? ''
-                            ]
-                        )
-                    ];
+                    $return['params'][] = array_merge(
+                        $param,
+                        [
+                            'value' => ProductsParams::findOne(['param_id' => $param['id'],
+                                'product_id' => $products['id']])->name ?? ''
+                        ]
+                    );
                 }
+//                print_r($return['params'] ?? '');
 
-                print_r($return);
+//                print_r($return);
 
-                $products['params'] = $return;
+                if (!empty($return['params']))
+                    $products['params'][] = $return;
             }
 //            print_r($products['params']);
 
@@ -94,10 +102,10 @@ class ProductsController extends BaseApiController
             }
         } else {
             $products = new Products();
+            $products->catalog_id = $params['catalog_id'];
+            $products->group_id = !empty($params['subgroup_id']) ? $params['subgroup_id'] : $params['group_id'];
         }
 
-        $products->catalog_id = $params['catalog_id'];
-        $products->group_id = !empty($params['subgroup_id']) ? $params['subgroup_id'] : $params['group_id'];
         $products->name = $params['name'];
         $products->price = $params['price'];
         $products->discount = $params['discount'];
@@ -108,6 +116,12 @@ class ProductsController extends BaseApiController
         }
 
         foreach ($params['params'] as $param) {
+            $title_id = Params::findOne(['id' => $param['param_id']])->title_id;
+            $paramTitle = ParamsTitle::findOne(['id' => $title_id]);
+
+            if ($products->catalog_id != $paramTitle->catalog_id)
+                continue;
+
             $productParam = ProductsParams::findOne(['param_id' => $param['param_id'], 'product_id' => $products->id]);
 
             if (empty($productParam)) {
