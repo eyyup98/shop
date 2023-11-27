@@ -10,7 +10,9 @@ use yii\db\ActiveQuery;
  *
  * @property int $id
  * @property int $product_id
- * @property string|null $img_src
+ * @property string|null $src
+ * @property string|null $name
+ * @property integer|null $main_img
  * @property string|null $created_at
  * @property string|null $updated_at
  *
@@ -35,7 +37,7 @@ class ProductsImg extends BaseActiveRecord
             [['product_id'], 'required'],
             [['product_id'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
-            [['img_src'], 'string', 'max' => 255],
+            [['src', 'name'], 'string', 'max' => 255],
             [['product_id'], 'exist', 'skipOnError' => true, 'targetClass' => Products::class, 'targetAttribute' => ['product_id' => 'id']],
         ];
     }
@@ -48,7 +50,9 @@ class ProductsImg extends BaseActiveRecord
         return [
             'id' => 'ID',
             'product_id' => 'Product ID',
-            'img_src' => 'Img Src',
+            'src' => 'Src',
+            'name' => 'Name',
+            'main_img' => 'Main Img',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];

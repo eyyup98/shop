@@ -14,13 +14,16 @@ class ProductsImgController extends BaseApiController
 {
     public $modelClass = ProductsImg::class;
 
-//    function actionIndex($id = null)
-//    {
-//        if (!empty($id))
-//            return Products::findOne($id);
-//        else
-//            return Products::find()->all();
-//    }
+    function actionIndex($id = null)
+    {
+        if (!empty($id))
+            return ProductsImg::findOne($id);
+        else {
+            $get = Yii::$app->request->get();
+
+            return ProductsImg::find()->where(['product_id' => $get['product_id']])->all();
+        }
+    }
 
     /**
      * @throws Throwable
@@ -38,20 +41,22 @@ class ProductsImgController extends BaseApiController
             mkdir($path, 0777, true);
         }
 
-        foreach ($_FILES as $FILE) {
-            $format = explode('.', $FILE['name']);
-            $name = uniqid() . '.' . end($format);
-            $path = $path . $name;
-            $savePath['src'][] = $name;
-            move_uploaded_file($FILE['tmp_name'], $path);
-        }
+        if (!empty($_FILES)) {
+            foreach ($_FILES as $FILE) {
+                $format = explode('.', $FILE['name']);
+                $name = uniqid() . '.' . end($format);
+                move_uploaded_file($FILE['tmp_name'], $path . $name);
+                $savePath['src'][] = $name;
+            }
 
-        foreach ($savePath['src'] as $item) {
-            $productImg = new ProductsImg();
-            $productImg->product_id = $id;
-            $productImg->img_src = $savePath['root'] . $item;
-            if (!$productImg->save())
-                return self::createResponse(400, json_encode($productImg->errors));
+            foreach ($savePath['src'] as $item) {
+                $productImg = new ProductsImg();
+                $productImg->product_id = $id;
+                $productImg->src = $savePath['root'] . $item;
+                $productImg->name = $item;
+                if (!$productImg->save())
+                    return self::createResponse(400, json_encode($productImg->errors));
+            }
         }
 
         return self::createResponse(204);

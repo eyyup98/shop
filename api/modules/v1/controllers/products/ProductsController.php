@@ -3,6 +3,9 @@
 namespace app\api\modules\v1\controllers\products;
 
 use app\api\modules\v1\base\BaseApiController;
+use app\api\modules\v1\models\groups\Groups;
+use app\api\modules\v1\models\params\Params;
+use app\api\modules\v1\models\params\ParamsTitle;
 use app\api\modules\v1\models\products\Products;
 use app\api\modules\v1\models\products\ProductsImg;
 use app\api\modules\v1\models\products\ProductsParams;
@@ -17,17 +20,61 @@ class ProductsController extends BaseApiController
 
     function actionIndex($id = null)
     {
-        if (!empty($id))
-            return Products::findOne($id);
-        else {
+        if (!empty($id)) {
+            $products = Products::findOne($id)->toArray();
+
+            if (empty($products))
+                return self::createResponse(400, 'Объект не найден');
+
+            $products['img'] = [];
+
+            $subgroup = Groups::findOne($products['group_id']) ?? null;
+            $products['subgroup_id'] = null;
+
+            if (!empty($subgroup->parent_id)) {
+                $products['group_id'] = $subgroup->parent_id;
+                $products['subgroup_id'] = $subgroup->id;
+            }
+
+            $title = ParamsTitle::find()->select(['id', 'name'])
+                ->where(['catalog_id' => $products['catalog_id'], 'group_id' => $subgroup->id ?? $subgroup->parent_id])
+            ->asArray()->all();
+
+            foreach ($title as $item) {
+                $return['name'] = $item;
+                $params = Params::find()->select(['id', 'name'])
+                    ->where(['title_id' => $item['id']])->asArray()->all();
+
+//                print_r($item);
+//                print_r($params);
+
+                foreach ($params as $param) {
+                    $return['params'] = [
+                        'params' => array_merge(
+                            $param,
+                            [
+                                'value' => ProductsParams::findOne(['param_id' => $param['id'],
+                                    'product_id' => $products['id']])->name ?? ''
+                            ]
+                        )
+                    ];
+                }
+
+                print_r($return);
+
+                $products['params'] = $return;
+            }
+//            print_r($products['params']);
+
+        } else {
             $products = Products::find()->select(['id', 'name', 'price', 'discount'])->asArray()->all();
 
             foreach ($products as &$product) {
-                $product['img'] = ProductsImg::findOne(['product_id' => $product['id']])->img_src ?? null;
+                $product['img'] = ProductsImg::findOne(['product_id' => $product['id']])->src ?? null;
             }
 
-            return $products;
         }
+        return $products;
     }
 
     /**
