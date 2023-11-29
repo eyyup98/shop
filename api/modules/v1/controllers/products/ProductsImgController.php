@@ -59,30 +59,43 @@ class ProductsImgController extends BaseApiController
             }
         }
 
-        return self::createResponse(204);
-    }
+        $get = Yii::$app->request->get();
 
-    /**
-     * @throws StaleObjectException
-     * @throws Throwable
-     */
-    function actionDelete($id = null)
-    {
-        if (empty($id))
-            return self::createResponse(400, 'Необходимо указать объект');
-
-        $delete = Products::findOne($id);
-
-        if (empty($delete))
-            return self::createResponse(400, 'Объект не найден');
-
-        try {
-            if (!$delete->delete())
-                return self::createResponse(400, json_encode($delete->errors));
-        } catch (Exception $e) {
-            return self::createResponse(400, $e->getMessage());
+        if (!empty($get['delete'])) {
+            foreach ($get['delete'] as $item) {
+                $deleteImg = ProductsImg::findOne($item);
+                unlink($_SERVER['DOCUMENT_ROOT'] . "/../storage" . $deleteImg->src);
+                $deleteImg->delete();
+            }
         }
 
         return self::createResponse(204);
     }
+
+//    /**
+//     * @throws StaleObjectException
+//     * @throws Throwable
+//     */
+//    function actionDelete($id = null)
+//    {
+//        $get = Yii::$app->request->get();
+//        return $get;
+//
+//        if (empty($id))
+//            return self::createResponse(400, 'Необходимо указать объект');
+//
+//        $delete = Products::findOne($id);
+//
+//        if (empty($delete))
+//            return self::createResponse(400, 'Объект не найден');
+//
+//        try {
+//            if (!$delete->delete())
+//                return self::createResponse(400, json_encode($delete->errors));
+//        } catch (Exception $e) {
+//            return self::createResponse(400, $e->getMessage());
+//        }
+//
+//        return self::createResponse(204);
+//    }
 }

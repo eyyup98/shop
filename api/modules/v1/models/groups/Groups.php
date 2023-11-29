@@ -74,7 +74,7 @@ class Groups extends BaseActiveRecord
         return array_merge(
             parent::fields(),
             [
-                'view_child' => function() {return false;},
+                'view_subgroups' => function() {return false;},
                 'subgroups' => function($model) {
                     return Groups::find()->select(['active', 'catalog_id', 'id', 'name', 'parent_id'])
                         ->where(['parent_id' => $model->id])->asArray()->all() ?? [];

@@ -6,13 +6,17 @@ namespace app\api\modules\v1\base;
 
 use app\api\modules\v1\models\Logs;
 use Throwable;
+use Yii;
 use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\db\Expression;
 use yii\db\StaleObjectException;
 
 class BaseActiveRecord extends ActiveRecord
 {
+    public static string|null $method;
+
     public function behaviors()
     {
         return [
@@ -169,5 +173,16 @@ class BaseActiveRecord extends ActiveRecord
         }
 
         return $return;
+    }
+
+    /**
+     * {@inheritdoc}
+     * @param null $method
+     * @return ActiveQuery|object the newly created [[ActiveQuery]] instance.
+     */
+    public static function find($method = null)
+    {
+        self::$method = !empty(self::$method) ? self::$method : $method;
+        return Yii::createObject(ActiveQuery::class, [get_called_class()]);
     }
 }

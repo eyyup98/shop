@@ -5,6 +5,7 @@ namespace app\api\modules\v1\controllers\groups;
 use app\api\modules\v1\base\BaseApiController;
 use app\api\modules\v1\models\catalogs\Catalogs;
 use app\api\modules\v1\models\groups\Groups;
+use app\api\modules\v1\models\params\ParamsTitle;
 use Throwable;
 use Yii;
 use yii\db\StaleObjectException;
@@ -67,6 +68,12 @@ class GroupsController extends BaseApiController
         }
 
         foreach ($params['subgroups'] as $item) {
+            $params = ParamsTitle::findOne(['group_id' => $groups->id]);
+
+            if (!empty($params)) {
+                return self::createResponse(400, 'У этой группы есть параметры. Вы не можете создавать подгруппы');
+            }
+
             if (!empty($item['id'])) {
                 $subgroup = Groups::findOne($item['id']);
                 if (empty($subgroup)) {

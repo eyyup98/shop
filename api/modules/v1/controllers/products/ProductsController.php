@@ -50,7 +50,10 @@ class ProductsController extends BaseApiController
 //            die();
 
             foreach ($title as $item) {
+                $return = [];
                 $return['name'] = $item['name'];
+                $return['catalog_id'] = $products['catalog_id'];
+                $return['group_id'] = $products['group_id'];
 //                print_r($return);
                 $params = Params::find()->select(['id', 'name'])
                     ->where(['title_id' => $item['id']])->asArray()->all();
@@ -131,8 +134,12 @@ class ProductsController extends BaseApiController
             }
 
             $productParam->name = $param['name'];
-            if (!$productParam->save())
-                return self::createResponse(400, json_encode($products->errors));
+
+            if (empty($param['name']) && !empty($productParam->id)) {
+                $productParam->delete();
+            } elseif (!empty($param['name']))
+                if (!$productParam->save())
+                    return self::createResponse(400, json_encode($products->errors));
         }
 
         return ['product_id' => $products->id];

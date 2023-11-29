@@ -16,10 +16,11 @@ class CatalogsController extends BaseApiController
 
     function actionIndex($id = null)
     {
+
         if (!empty($id))
             return Catalogs::findOne($id);
         else
-            return Catalogs::find()->all();
+            return Catalogs::find('forGroups')->all();
     }
 
     /**

@@ -7,6 +7,7 @@ use app\api\modules\v1\models\catalogs\Catalogs;
 use app\api\modules\v1\models\groups\Groups;
 use app\api\modules\v1\models\params\Params;
 use app\api\modules\v1\models\params\ParamsTitle;
+use app\api\modules\v1\models\products\ProductsParams;
 use PhpParser\Node\Param;
 use Throwable;
 use Yii;
@@ -24,6 +25,13 @@ class ParamsTitleController extends BaseApiController
         else
             return ParamsTitle::find()->all();
     }
+
+//    function actionProduct()
+//    {
+//        $get = Yii::$app->request->get();
+//
+//        ProductsParams::find()->where(['' => $get['product_id']])
+//    }
 
     /**
      * @throws Throwable
