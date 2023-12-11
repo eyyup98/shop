@@ -78,7 +78,19 @@ class ProductsController extends BaseApiController
 //            print_r($products['params']);
 
         } else {
-            $products = Products::find()->select(['id', 'name', 'price', 'discount'])->asArray()->all();
+            $get = Yii::$app->request->get();
+
+            $products = Products::find()->select(['id', 'name', 'price', 'discount']);
+
+            if (!empty($get['catalog_id']))
+                $products->where(['catalog_id' => $get['catalog_id']]);
+
+            if (!empty($get['subgroup_id']))
+                $products->where(['group_id' => $get['subgroup_id']]);
+            elseif (!empty($get['group_id']))
+                $products->where(['group_id' => $get['group_id']]);
+
+            $products = $products->asArray()->all();
 
             foreach ($products as &$product) {
                 $product['img'] = ProductsImg::findOne(['product_id' => $product['id']])->src ?? null;

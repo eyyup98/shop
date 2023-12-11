@@ -77,7 +77,20 @@ class Catalogs extends BaseActiveRecord
             'active',
             'view_groups' => function() { return true; },
             'groups' => function($model) {
-                return Groups::find()->where(['catalog_id' => $model->id, 'parent_id' => null])->all();
+                return Groups::find()->where(['catalog_id' => $model->id])->all() ?? [];
+            },
+        ];
+    }
+
+    function forParams(): array
+    {
+        return [
+            'id',
+            'name',
+            'active',
+            'view_groups' => function() { return true; },
+            'groups' => function($model) {
+                return Groups::find()->where(['catalog_id' => $model->id])->all();
             },
         ];
     }

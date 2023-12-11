@@ -4,6 +4,8 @@ namespace app\api\modules\v1\models\groups;
 
 use app\api\modules\v1\base\BaseActiveRecord;
 use app\api\modules\v1\models\catalogs\Catalogs;
+use app\api\modules\v1\models\params\ParamsTitle;
+use app\api\modules\v1\models\products\Products;
 use yii\db\ActiveQuery;
 
 /**
@@ -11,13 +13,14 @@ use yii\db\ActiveQuery;
  *
  * @property int $id
  * @property int $catalog_id
- * @property int|null $parent_id
  * @property string|null $name
  * @property int|null $active
  * @property string|null $created_at
  * @property string|null $updated_at
  *
  * @property Catalogs $catalog
+ * @property ParamsTitle[] $paramsTitles
+ * @property Products[] $products
  */
 class Groups extends BaseActiveRecord
 {
@@ -36,7 +39,7 @@ class Groups extends BaseActiveRecord
     {
         return [
             [['catalog_id'], 'required'],
-            [['catalog_id', 'parent_id'/*, 'active'*/], 'integer'],
+            [['catalog_id'/*, 'active'*/], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['name'], 'string', 'max' => 255],
             [['catalog_id'], 'exist', 'skipOnError' => true, 'targetClass' => Catalogs::class, 'targetAttribute' => ['catalog_id' => 'id']],
@@ -51,7 +54,6 @@ class Groups extends BaseActiveRecord
         return [
             'id' => 'ID',
             'catalog_id' => 'Catalog ID',
-            'parent_id' => 'Parent ID',
             'name' => 'Name',
             'active' => 'Active',
             'created_at' => 'Created At',
@@ -69,21 +71,54 @@ class Groups extends BaseActiveRecord
         return $this->hasOne(Catalogs::class, ['id' => 'catalog_id']);
     }
 
-    public function fields()
+    /**
+     * Gets query for [[ParamsTitles]].
+     *
+     * @return ActiveQuery
+     */
+    public function getParamsTitles(): ActiveQuery
     {
-        return array_merge(
-            parent::fields(),
-            [
-                'view_subgroups' => function() {return false;},
-                'subgroups' => function($model) {
-                    return Groups::find()->select(['active', 'catalog_id', 'id', 'name', 'parent_id'])
-                        ->where(['parent_id' => $model->id])->asArray()->all() ?? [];
-                },
-                'catalog_name' => function($model) {
-                    return Catalogs::findOne($model->catalog_id)->name;
-                }
+        return $this->hasMany(ParamsTitle::class, ['group_id' => 'id']);
+    }
 
-            ]
-        );
+    /**
+     * Gets query for [[Products]].
+     *
+     * @return ActiveQuery
+     */
+    public function getProducts(): ActiveQuery
+    {
+        return $this->hasMany(Products::class, ['group_id' => 'id']);
+    }
+
+    public function fields($method = null)
+    {
+        if (self::$method != 'forGroups') {
+            self::$method = !empty(self::$method) ? self::$method : $method;
+
+            if (!empty(self::$method))
+                return $this->{self::$method}();
+        }
+
+        $fields = parent::fields();
+
+        unset($fields['created_at']);
+        unset($fields['updated_at']);
+
+        return $fields;
+    }
+
+    function forParams(): array
+    {
+        return [
+            'id',
+            'catalog_id',
+            'name',
+            'active',
+            'view_params' => function() { return true; },
+            'param_title' => function($model) {
+                return ParamsTitle::find()->where(['catalog_id' => $model->catalog_id, 'group_id' => $model->id])->all();
+            },
+        ];
     }
 }

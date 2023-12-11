@@ -93,29 +93,12 @@ class ParamsTitle extends BaseActiveRecord
 
     public function fields()
     {
-        $params = Params::find()->select(['id', 'name', 'title_id'])->where(['title_id' => $this->id])->asArray()->all();
-
-        foreach ($params as &$param) {
-            $param['value'] = '';
-        }
-
-        $groupChild = Groups::find()->where(['id' => $this->group_id])->andWhere(['not', ['parent_id' => null]])->one();
-        $groupParent = Groups::findOne(['id' => ($groupChild->parent_id ?? $this->group_id)]);
-        $catalog = Catalogs::findOne($groupParent->catalog_id);
-        $parent = parent::fields();
-        $groupActive = $groupChild->active ?? $groupParent->active;
         return array_merge(
-            $parent,
+            parent::fields(),
             [
-                'catalog_id' => function() use ($catalog) { return $catalog->id; },
-                'catalog_name' => function() use ($catalog) { return $catalog->name; },
-                'group_parent_id' => function() use ($groupParent) { return $groupParent->id; },
-                'group_parent_name' => function() use ($groupParent) { return $groupParent->name; },
-                'group_child_id' => function() use ($groupChild) { return $groupChild->id ?? null; },
-                'group_child_name' => function() use ($groupChild) { return $groupChild->name ?? null; },
-                'params' => function() use ($params) { return $params ?? []; },
-                'group_active' => function() use ($groupActive) { return $groupActive; },
-                'view_params' => function() { return false; }
+                'params' => function($model) {
+                    return Params::find()->select(['id', 'name', 'title_id'])->where(['title_id' => $model->id])->asArray()->all() ?? [];
+                }
             ]
         );
     }

@@ -16,11 +16,26 @@ class CatalogsController extends BaseApiController
 
     function actionIndex($id = null)
     {
-
         if (!empty($id))
             return Catalogs::findOne($id);
         else
+            return Catalogs::find()->all();
+    }
+
+    function actionForGroups($id = null)
+    {
+        if (!empty($id))
+            return Catalogs::find('forGroups')->where(['id' => $id])->one();
+        else
             return Catalogs::find('forGroups')->all();
+    }
+
+    function actionForParams($id = null)
+    {
+        if (!empty($id))
+            return Catalogs::find('forParams')->where(['id' => $id])->one();
+        else
+            return Catalogs::find('forParams')->all();
     }
 
     /**
