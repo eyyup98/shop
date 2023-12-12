@@ -72,7 +72,7 @@ class Catalogs extends BaseActiveRecord
     function forGroups(): array
     {
         return [
-            'id',
+            'catalog_id' =>  function($model) { return $model->id; },
             'name',
             'active',
             'view_groups' => function() { return true; },

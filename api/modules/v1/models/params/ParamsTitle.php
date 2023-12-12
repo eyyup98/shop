@@ -96,6 +96,7 @@ class ParamsTitle extends BaseActiveRecord
         return array_merge(
             parent::fields(),
             [
+                'view_params' => function() { return true; },
                 'params' => function($model) {
                     return Params::find()->select(['id', 'name', 'title_id'])->where(['title_id' => $model->id])->asArray()->all() ?? [];
                 }

@@ -115,8 +115,8 @@ class Groups extends BaseActiveRecord
             'catalog_id',
             'name',
             'active',
-            'view_params' => function() { return true; },
-            'param_title' => function($model) {
+            'view_params_title' => function() { return true; },
+            'params_title' => function($model) {
                 return ParamsTitle::find()->where(['catalog_id' => $model->catalog_id, 'group_id' => $model->id])->all();
             },
         ];
