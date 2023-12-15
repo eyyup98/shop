@@ -5,7 +5,6 @@ namespace app\api\modules\v1\controllers\groups;
 use app\api\modules\v1\base\BaseApiController;
 use app\api\modules\v1\models\catalogs\Catalogs;
 use app\api\modules\v1\models\groups\Groups;
-use app\api\modules\v1\models\params\ParamsTitle;
 use Throwable;
 use Yii;
 use yii\db\IntegrityException;
@@ -14,14 +13,6 @@ use yii\db\StaleObjectException;
 class GroupsController extends BaseApiController
 {
     public $modelClass = Groups::class;
-
-//    function actionIndex($id = null)
-//    {
-//        if (!empty($id))
-//            return Groups::findOne($id);
-//        else
-//            return Groups::find()->all();
-//    }
 
     /**
      * @throws Throwable

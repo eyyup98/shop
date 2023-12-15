@@ -4,8 +4,8 @@ namespace app\api\modules\v1\models\catalogs;
 
 use app\api\modules\v1\base\BaseActiveRecord;
 use app\api\modules\v1\models\groups\Groups;
-use Yii;
-use yii\base\InvalidConfigException;
+use app\api\modules\v1\models\params\Params;
+use app\api\modules\v1\models\products\Products;
 use yii\db\ActiveQuery;
 
 /**
@@ -16,6 +16,10 @@ use yii\db\ActiveQuery;
  * @property int|null $active
  * @property string|null $created_at
  * @property string|null $updated_at
+ *
+ * @property Groups[] $groups
+ * @property Params[] $params
+ * @property Products[] $products
  */
 class Catalogs extends BaseActiveRecord
 {
@@ -54,6 +58,36 @@ class Catalogs extends BaseActiveRecord
         ];
     }
 
+    /**
+     * Gets query for [[Groups]].
+     *
+     * @return ActiveQuery
+     */
+    public function getGroups(): ActiveQuery
+    {
+        return $this->hasMany(Groups::class, ['catalog_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Params]].
+     *
+     * @return ActiveQuery
+     */
+    public function getParams(): ActiveQuery
+    {
+        return $this->hasMany(Params::class, ['catalog_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[Products]].
+     *
+     * @return ActiveQuery
+     */
+    public function getProducts(): ActiveQuery
+    {
+        return $this->hasMany(Products::class, ['catalog_id' => 'id']);
+    }
+
     public function fields($method = null)
     {
         self::$method = !empty(self::$method) ? self::$method : $method;
@@ -85,7 +119,7 @@ class Catalogs extends BaseActiveRecord
     function forParams(): array
     {
         return [
-            'id',
+            'catalog_id' =>  function($model) { return $model->id; },
             'name',
             'active',
             'view_groups' => function() { return true; },

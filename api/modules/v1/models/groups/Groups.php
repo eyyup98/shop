@@ -4,7 +4,7 @@ namespace app\api\modules\v1\models\groups;
 
 use app\api\modules\v1\base\BaseActiveRecord;
 use app\api\modules\v1\models\catalogs\Catalogs;
-use app\api\modules\v1\models\params\ParamsTitle;
+use app\api\modules\v1\models\params\Params;
 use app\api\modules\v1\models\products\Products;
 use yii\db\ActiveQuery;
 
@@ -19,7 +19,7 @@ use yii\db\ActiveQuery;
  * @property string|null $updated_at
  *
  * @property Catalogs $catalog
- * @property ParamsTitle[] $paramsTitles
+ * @property Params[] $params
  * @property Products[] $products
  */
 class Groups extends BaseActiveRecord
@@ -72,13 +72,13 @@ class Groups extends BaseActiveRecord
     }
 
     /**
-     * Gets query for [[ParamsTitles]].
+     * Gets query for [[Params]].
      *
      * @return ActiveQuery
      */
-    public function getParamsTitles(): ActiveQuery
+    public function getParams(): ActiveQuery
     {
-        return $this->hasMany(ParamsTitle::class, ['group_id' => 'id']);
+        return $this->hasMany(Params::class, ['group_id' => 'id']);
     }
 
     /**
@@ -111,13 +111,12 @@ class Groups extends BaseActiveRecord
     function forParams(): array
     {
         return [
-            'id',
+            'group_id' =>  function($model) { return $model->id; },
             'catalog_id',
             'name',
-            'active',
-            'view_params_title' => function() { return true; },
-            'params_title' => function($model) {
-                return ParamsTitle::find()->where(['catalog_id' => $model->catalog_id, 'group_id' => $model->id])->all();
+            'view_params' => function() { return true; },
+            'params' => function($model) {
+                return Params::find()->where(['catalog_id' => $model->catalog_id, 'group_id' => $model->id])->all();
             },
         ];
     }

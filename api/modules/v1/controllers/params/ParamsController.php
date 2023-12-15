@@ -3,13 +3,10 @@
 namespace app\api\modules\v1\controllers\params;
 
 use app\api\modules\v1\base\BaseApiController;
-use app\api\modules\v1\models\catalogs\Catalogs;
-use app\api\modules\v1\models\groups\Groups;
 use app\api\modules\v1\models\params\Params;
 use Throwable;
 use Yii;
 use yii\db\StaleObjectException;
-use yii\db\IntegrityException;
 
 class ParamsController extends BaseApiController
 {
@@ -27,7 +24,7 @@ class ParamsController extends BaseApiController
      * @throws Throwable
      * @throws StaleObjectException
      */
-    function actionCreate($id = null)
+    function actionCreate()
     {
         $rawBody = json_decode(Yii::$app->request->rawBody, true);
         $params = $rawBody['params'];
@@ -42,10 +39,18 @@ class ParamsController extends BaseApiController
                 }
             } else {
                 $paramsDb = new Params();
-                $paramsDb->title_id = $param['title_id'];
+                $paramsDb->catalog_id = $rawBody['catalog_id'];
+                $paramsDb->group_id = $rawBody['group_id'];
             }
 
             $paramsDb->name = $param['name'];
+
+            if (
+                !empty(Params::findOne(['catalog_id' => $paramsDb->catalog_id,
+                    'group_id' => $paramsDb->group_id,'name' => $paramsDb->name]))
+            ) {
+                return self::createResponse(400, 'Такой параметр уже существует');
+            }
 
             if (!$paramsDb->save()) {
                 return self::createResponse(400, json_encode($paramsDb->errors));

@@ -22,6 +22,8 @@ use yii\db\ActiveQuery;
  *
  * @property Catalogs $catalog
  * @property Groups $group
+ * @property ProductsImg[] $productsImgs
+ * @property ProductsParams[] $productsParams
  */
 class Products extends BaseActiveRecord
 {
@@ -85,5 +87,25 @@ class Products extends BaseActiveRecord
     public function getGroup(): ActiveQuery
     {
         return $this->hasOne(Groups::class, ['id' => 'group_id']);
+    }
+
+    /**
+     * Gets query for [[ProductsImgs]].
+     *
+     * @return ActiveQuery
+     */
+    public function getProductsImgs(): ActiveQuery
+    {
+        return $this->hasMany(ProductsImg::class, ['product_id' => 'id']);
+    }
+
+    /**
+     * Gets query for [[ProductsParams]].
+     *
+     * @return ActiveQuery
+     */
+    public function getProductsParams(): ActiveQuery
+    {
+        return $this->hasMany(ProductsParams::class, ['product_id' => 'id']);
     }
 }
