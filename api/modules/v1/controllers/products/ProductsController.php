@@ -34,6 +34,12 @@ class ProductsController extends BaseApiController
             if (!empty($get['group_id']))
                 $products->where(['group_id' => $get['group_id']]);
 
+            if (!empty($get['product_id'])) {
+                $products->where(['id' => $get['product_id']]);
+            } elseif (!empty($get['search'])) {
+                $products->where("name like '%{$get['search']}%'");
+            }
+
             $products = $products->asArray()->all();
 
             foreach ($products as &$product) {
@@ -121,5 +127,22 @@ class ProductsController extends BaseApiController
         }
 
         return self::createResponse(204);
+    }
+
+    function actionSearch()
+    {
+        $get = Yii::$app->request->get();
+
+        $list = Products::find('forSearch')->select(['id', 'name']);
+
+        if (!empty($get['catalog_id']))
+            $list->andWhere(['catalog_id' => $get['catalog_id']]);
+
+        if (!empty($get['group_id']))
+            $list->andWhere(['group_id' => $get['group_id']]);
+
+        $list->andWhere("name like '%{$get['search']}%'");
+
+        return $list->all() ?? [];
     }
 }

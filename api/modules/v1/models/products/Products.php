@@ -110,8 +110,13 @@ class Products extends BaseActiveRecord
         return $this->hasMany(ProductsParams::class, ['product_id' => 'id']);
     }
 
-    public function fields()
+    public function fields($method = null)
     {
+        self::$method = !empty(self::$method) ? self::$method : $method;
+
+        if (!empty(self::$method))
+            return $this->{self::$method}();
+
         return array_merge(
             parent::fields(),
             [
@@ -146,5 +151,13 @@ class Products extends BaseActiveRecord
                 },
             ]
         );
+    }
+
+    function forSearch()
+    {
+        return [
+            'id',
+            'name'
+        ];
     }
 }
