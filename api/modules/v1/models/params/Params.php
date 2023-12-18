@@ -91,4 +91,13 @@ class Params extends BaseActiveRecord
     {
         return $this->hasMany(ProductsParams::class, ['param_id' => 'id']);
     }
+
+    public function fields()
+    {
+        $result = parent::fields();
+        $result['product_param_id'] = function() { return null; };
+        $result['product_param_name'] = function() { return ''; };
+
+        return $result;
+    }
 }

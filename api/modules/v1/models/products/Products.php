@@ -5,6 +5,7 @@ namespace app\api\modules\v1\models\products;
 use app\api\modules\v1\base\BaseActiveRecord;
 use app\api\modules\v1\models\catalogs\Catalogs;
 use app\api\modules\v1\models\groups\Groups;
+use app\api\modules\v1\models\params\Params;
 use yii\db\ActiveQuery;
 
 /**
@@ -107,5 +108,43 @@ class Products extends BaseActiveRecord
     public function getProductsParams(): ActiveQuery
     {
         return $this->hasMany(ProductsParams::class, ['product_id' => 'id']);
+    }
+
+    public function fields()
+    {
+        return array_merge(
+            parent::fields(),
+            [
+                'catalog_name' => function($model) {
+                    return Catalogs::findOne($model->catalog_id)->name;
+                },
+                'group_name' => function($model) {
+                    return Groups::findOne($model->group_id)->name;
+                },
+                'img' => function($model) {
+                    return ProductsImg::find()->where(['product_id' => $model->id])->all();
+                },
+                'params' => function($model) {
+                    $result = [];
+                    $params = Params::find()->where(['catalog_id' => $model->catalog_id,
+                        'group_id' => $model->group_id])->asArray()->all();
+
+                    foreach ($params as $param) {
+                        $productParams = ProductsParams::find()->where(['param_id' => $param['id'],
+                            'product_id' => $model->id])->asArray()->one();
+
+                        $result[] = array_merge(
+                            $param,
+                            [
+                                'product_param_id' => $productParams['id'] ?? null,
+                                'product_param_name' => $productParams['name'] ?? ''
+                            ]
+                        );
+                    }
+
+                    return $result;
+                },
+            ]
+        );
     }
 }

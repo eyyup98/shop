@@ -3,10 +3,7 @@
 namespace app\api\modules\v1\controllers\products;
 
 use app\api\modules\v1\base\BaseApiController;
-use app\api\modules\v1\models\catalogs\Catalogs;
-use app\api\modules\v1\models\groups\Groups;
 use app\api\modules\v1\models\params\Params;
-use app\api\modules\v1\models\params\ParamsTitle;
 use app\api\modules\v1\models\products\Products;
 use app\api\modules\v1\models\products\ProductsImg;
 use app\api\modules\v1\models\products\ProductsParams;
@@ -22,61 +19,10 @@ class ProductsController extends BaseApiController
     function actionIndex($id = null)
     {
         if (!empty($id)) {
-            $products = Products::findOne($id)->toArray();
+            $products = Products::find()->where(['id' => $id])->one();
 
             if (empty($products))
                 return self::createResponse(400, 'Объект не найден');
-
-            $products['img'] = [];
-
-            $subgroup = Groups::findOne($products['group_id']) ?? null;
-            $products['subgroup_id'] = null;
-
-            if (!empty($subgroup->parent_id)) {
-                $products['group_id'] = $subgroup->parent_id;
-                $products['subgroup_id'] = $subgroup->id;
-            }
-
-            $products['catalog_name'] = Catalogs::findOne($products['catalog_id'])->name;
-            $products['group_name'] = Groups::findOne($products['group_id'])->name;
-            $products['subgroup_name'] = Groups::findOne($products['subgroup_id'])->name ?? null;
-//print_r('catalog_id' . $products['catalog_id']);
-//            die();
-
-            $title = ParamsTitle::find()->select(['id', 'name'])
-                ->where(['catalog_id' => $products['catalog_id']])
-            ->asArray()->all();
-//            print_r($title);
-//            die();
-
-            foreach ($title as $item) {
-                $return = [];
-                $return['name'] = $item['name'];
-                $return['catalog_id'] = $products['catalog_id'];
-                $return['group_id'] = $products['group_id'];
-//                print_r($return);
-                $params = Params::find()->select(['id', 'name'])
-                    ->where(['title_id' => $item['id']])->asArray()->all();
-//                print_r($params);
-
-                foreach ($params as $param) {
-                    $return['params'][] = array_merge(
-                        $param,
-                        [
-                            'value' => ProductsParams::findOne(['param_id' => $param['id'],
-                                'product_id' => $products['id']])->name ?? ''
-                        ]
-                    );
-                }
-//                print_r($return['params'] ?? '');
-
-//                print_r($return);
-
-                if (!empty($return['params']))
-                    $products['params'][] = $return;
-            }
-//            print_r($products['params']);
-
         } else {
             $get = Yii::$app->request->get();
 
@@ -85,9 +31,7 @@ class ProductsController extends BaseApiController
             if (!empty($get['catalog_id']))
                 $products->where(['catalog_id' => $get['catalog_id']]);
 
-            if (!empty($get['subgroup_id']))
-                $products->where(['group_id' => $get['subgroup_id']]);
-            elseif (!empty($get['group_id']))
+            if (!empty($get['group_id']))
                 $products->where(['group_id' => $get['group_id']]);
 
             $products = $products->asArray()->all();
@@ -95,7 +39,6 @@ class ProductsController extends BaseApiController
             foreach ($products as &$product) {
                 $product['img'] = ProductsImg::findOne(['product_id' => $product['id']])->src ?? null;
             }
-
         }
         return $products;
     }
@@ -107,54 +50,53 @@ class ProductsController extends BaseApiController
     function actionCreate($id = null)
     {
         $rawBody = json_decode(Yii::$app->request->rawBody, true);
-        $params = $rawBody['params'];
+        $product = $rawBody['product'];
 
         if (!empty($id)) {
-            $products= Products::findOne($id);
+            $productBD = Products::findOne($id);
 
-            if (empty($products)) {
+            if (empty($productBD)) {
                 return self::createResponse(400, 'Объект не найден');
             }
         } else {
-            $products = new Products();
-            $products->catalog_id = $params['catalog_id'];
-            $products->group_id = !empty($params['subgroup_id']) ? $params['subgroup_id'] : $params['group_id'];
+            $productBD = new Products();
+            $productBD->catalog_id = $product['catalog_id'];
+            $productBD->group_id = $product['group_id'];
         }
 
-        $products->name = $params['name'];
-        $products->price = $params['price'];
-        $products->discount = $params['discount'];
-        $products->active = $params['active'];
+        $productBD->name = $product['name'];
+        $productBD->price = $product['price'];
+        $productBD->discount = $product['discount'];
+        $productBD->active = $product['active'];
 
-        if (!$products->save()) {
-            return self::createResponse(400, json_encode($products->errors));
+        if (!$productBD->save()) {
+            return self::createResponse(400, json_encode($productBD->errors));
         }
 
-        foreach ($params['params'] as $param) {
-            $title_id = Params::findOne(['id' => $param['param_id']])->title_id;
-            $paramTitle = ParamsTitle::findOne(['id' => $title_id]);
+        foreach ($product['params'] as $param) {
+            $paramBD = Params::findOne(['id' => $param['id']]);
 
-            if ($products->catalog_id != $paramTitle->catalog_id)
+            if ($productBD->catalog_id != $paramBD->catalog_id || $productBD->group_id != $paramBD->group_id)
                 continue;
 
-            $productParam = ProductsParams::findOne(['param_id' => $param['param_id'], 'product_id' => $products->id]);
+            $productParam = ProductsParams::findOne(['param_id' => $param['id'], 'product_id' => $productBD->id]);
 
             if (empty($productParam)) {
                 $productParam = new ProductsParams();
-                $productParam->param_id = $param['param_id'];
-                $productParam->product_id = $products->id;
+                $productParam->param_id = $param['id'];
+                $productParam->product_id = $productBD->id;
             }
 
-            $productParam->name = $param['name'];
+            $productParam->name = $param['product_param_name'];
 
-            if (empty($param['name']) && !empty($productParam->id)) {
+            if (empty($param['product_param_name']) && !empty($productParam->id)) {
                 $productParam->delete();
-            } elseif (!empty($param['name']))
+            } elseif (!empty($param['product_param_name']))
                 if (!$productParam->save())
-                    return self::createResponse(400, json_encode($products->errors));
+                    return self::createResponse(400, json_encode($productBD->errors));
         }
 
-        return ['product_id' => $products->id];
+        return ['product_id' => $productBD->id];
     }
 
     /**
