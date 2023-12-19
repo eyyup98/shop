@@ -128,4 +128,15 @@ class Catalogs extends BaseActiveRecord
             },
         ];
     }
+
+    function forClients(): array
+    {
+        return [
+            'catalog_id' =>  function($model) { return $model->id; },
+            'name',
+            'groups' => function($model) {
+                return Groups::find()->where(['catalog_id' => $model->id])->all();
+            },
+        ];
+    }
 }

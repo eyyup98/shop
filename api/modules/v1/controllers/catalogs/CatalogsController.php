@@ -38,6 +38,11 @@ class CatalogsController extends BaseApiController
             return Catalogs::find('forParams')->all();
     }
 
+    function actionForClients()
+    {
+        return Catalogs::find('forClients')->where(['active' => true])->all();
+    }
+
     /**
      * @throws Throwable
      * @throws StaleObjectException

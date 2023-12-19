@@ -120,4 +120,12 @@ class Groups extends BaseActiveRecord
             },
         ];
     }
+
+    function forClients(): array
+    {
+        return [
+            'group_id' =>  function($model) { return $model->id; },
+            'name',
+        ];
+    }
 }
