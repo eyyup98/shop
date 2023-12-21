@@ -35,12 +35,12 @@ class AuthController extends BaseApiController
             throw new HttpException(401, "Не верный логин или пароль", 401);
         }
 
-        $accessToken = AccessToken::findOne(['user_id' => $user->id]);
+//        $accessToken = AccessToken::findOne(['user_id' => $user->id]);
 
-        if (empty($accessToken)) {
+//        if (empty($accessToken)) {
             $accessToken = new AccessToken();
             $accessToken->user_id = $user->id;
-        }
+//        }
 
         $accessToken->token = sprintf(
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
