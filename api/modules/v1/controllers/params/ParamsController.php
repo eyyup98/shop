@@ -45,11 +45,13 @@ class ParamsController extends BaseApiController
 
             $paramsDb->name = $param['name'];
 
-            if (
+            if (empty($paramsDb->id)) {
+                if (
                 !empty(Params::findOne(['catalog_id' => $paramsDb->catalog_id,
-                    'group_id' => $paramsDb->group_id,'name' => $paramsDb->name]))
-            ) {
-                return self::createResponse(400, 'Такой параметр уже существует');
+                    'group_id' => $paramsDb->group_id, 'name' => $paramsDb->name]))
+                ) {
+                    return self::createResponse(400, 'Такой параметр уже существует');
+                }
             }
 
             if (!$paramsDb->save()) {

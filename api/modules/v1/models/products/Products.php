@@ -17,6 +17,7 @@ use yii\db\ActiveQuery;
  * @property string $name
  * @property float|null $price
  * @property float|null $discount
+ * @property string|null $description Описание товара
  * @property int|null $active
  * @property string|null $created_at
  * @property string|null $updated_at
@@ -45,6 +46,7 @@ class Products extends BaseActiveRecord
             [['catalog_id', 'group_id', 'name'], 'required'],
             [['catalog_id', 'group_id'/*, 'active'*/], 'integer'],
             [['price', 'discount'], 'number'],
+            [['description'], 'string'],
             [['created_at', 'updated_at'], 'safe'],
             [['name'], 'string', 'max' => 255],
             [['catalog_id'], 'exist', 'skipOnError' => true, 'targetClass' => Catalogs::class, 'targetAttribute' => ['catalog_id' => 'id']],
@@ -64,6 +66,7 @@ class Products extends BaseActiveRecord
             'name' => 'Name',
             'price' => 'Price',
             'discount' => 'Discount',
+            'description' => 'Description',
             'active' => 'Active',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',

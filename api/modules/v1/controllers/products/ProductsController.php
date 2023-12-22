@@ -74,6 +74,7 @@ class ProductsController extends BaseApiController
         $productBD->price = $product['price'];
         $productBD->discount = $product['discount'];
         $productBD->active = $product['active'];
+        $productBD->description = $product['description'];
 
         if (!$productBD->save()) {
             return self::createResponse(400, json_encode($productBD->errors));

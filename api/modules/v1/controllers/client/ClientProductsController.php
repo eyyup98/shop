@@ -3,8 +3,10 @@
 namespace app\api\modules\v1\controllers\client;
 
 use app\api\modules\v1\base\BaseApiController;
+use app\api\modules\v1\models\params\Params;
 use app\api\modules\v1\models\products\Products;
 use app\api\modules\v1\models\products\ProductsImg;
+use app\api\modules\v1\models\products\ProductsParams;
 use Yii;
 
 class ClientProductsController extends BaseApiController
@@ -15,12 +17,26 @@ class ClientProductsController extends BaseApiController
     function actionIndex($id = null)
     {
         if (!empty($id)) {
-            $products = Products::find()->where(['id' => $id])->where(['active' => 1])->asArray()->one();
+            $products = Products::find()->where(['id' => $id, 'active' => 1])->asArray()->one();
 
             if (empty($products))
                 return self::createResponse(400, 'Объект не найден');
 
             $products['img'] = ProductsImg::find()->where(['product_id' => $id])->all();
+            $productParams = ProductsParams::find()->where(['product_id' => $id])->all();
+
+            $resultParams = [];
+            foreach ($productParams as $productParam) {
+                $resultParams[] = [
+                    'name' => Params::findOne($productParam['param_id'])->name,
+                    'value' => $productParam['name']
+                ];
+            }
+
+            $products['params'] = $resultParams;
+
+            $products['price'] = number_format($products['price'], 2, ',', ' ') . ' TMT';
+            $products['discount'] = number_format($products['discount'], 2, ',', ' ') . ' TMT';
         } else {
             $get = Yii::$app->request->get();
 
