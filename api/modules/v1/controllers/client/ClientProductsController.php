@@ -55,6 +55,10 @@ class ClientProductsController extends BaseApiController
             $products = $products->asArray()->all();
 
             foreach ($products as &$product) {
+                $price = number_format($product['price'], 2, ',', ' ') . ' TMT';
+                $discount = number_format($product['discount'], 2, ',', ' ');
+                $product['price'] = str_replace(",00", "",$price);
+                $product['discount'] = str_replace(",00", "",$discount);
                 $product['img'] = ProductsImg::findOne(['product_id' => $product['id']])->src ?? null;
             }
         }
@@ -65,15 +69,8 @@ class ClientProductsController extends BaseApiController
     {
         $get = Yii::$app->request->get();
 
-        $list = Products::find('forSearch')->select(['id', 'name']);
-
-        if (!empty($get['catalog_id']))
-            $list->andWhere(['catalog_id' => $get['catalog_id']]);
-
-        if (!empty($get['group_id']))
-            $list->andWhere(['group_id' => $get['group_id']]);
-
-        $list->andWhere("name like '%{$get['search']}%'");
+        $list = Products::find('forSearch')->select(['id', 'name'])->where(['active' => 1])
+            ->andWhere("name like '%{$get['search']}%'");
 
         return $list->all() ?? [];
     }
