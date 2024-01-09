@@ -35,8 +35,10 @@ class ClientProductsController extends BaseApiController
 
             $products['params'] = $resultParams;
 
-            $products['price'] = number_format($products['price'], 2, ',', ' ') . ' TMT';
-            $products['discount'] = number_format($products['discount'], 2, ',', ' ') . ' TMT';
+            $price = number_format($products['price'], 2, ',', ' ') . ' TMT';
+            $discount = number_format($products['discount'], 2, ',', ' ');
+            $products['price'] = str_replace(",00", "",$price);
+            $products['discount'] = str_replace(",00", "",$discount);
         } else {
             $get = Yii::$app->request->get();
 

@@ -33,6 +33,28 @@ class BaseApiController extends ActiveController
         return $this->deleteAction(['index', 'create', 'update', 'delete']);
     }
 
+    public function getUnserializeArray($column)
+    {
+        $column = $column->data;
+
+        $conf = $this->$column;
+        $this->$column = null;
+        if (!empty($conf)) {
+            $this->$column = unserialize($conf);
+        }
+    }
+
+    public function setSerializeArray($column)
+    {
+        $column = $column->data;
+
+        $conf = $this->$column;
+        $this->$column = null;
+        if (!empty($conf) && is_array($conf)) {
+            $this->$column = serialize($conf);
+        }
+    }
+
     /**
      * Без этого метода происходит 404 Not Found
      */
