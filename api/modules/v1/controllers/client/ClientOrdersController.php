@@ -34,6 +34,8 @@ class ClientOrdersController extends BaseApiController
         if (!$order->save())
             return self::createResponse(400, json_encode($order->errors));
 
-        return self::createResponse(204);
+        return ['data' => [
+            'id' => $order->id
+        ]];
     }
 }
