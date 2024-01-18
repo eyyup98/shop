@@ -34,11 +34,6 @@ class ClientProductsController extends BaseApiController
             }
 
             $products['params'] = $resultParams;
-
-            $price = number_format($products['price'], 2, ',', ' ') . ' TMT';
-            $discount = number_format($products['discount'], 2, ',', ' ');
-            $products['price'] = str_replace(",00", "",$price);
-            $products['discount'] = str_replace(",00", "",$discount);
         } else {
             $get = Yii::$app->request->get();
 
@@ -57,10 +52,6 @@ class ClientProductsController extends BaseApiController
             $products = $products->asArray()->all();
 
             foreach ($products as &$product) {
-                $price = number_format($product['price'], 2, ',', ' ') . ' TMT';
-                $discount = number_format($product['discount'], 2, ',', ' ');
-                $product['price'] = str_replace(",00", "",$price);
-                $product['discount'] = str_replace(",00", "",$discount);
                 $product['img'] = ProductsImg::findOne(['product_id' => $product['id']])->src ?? null;
             }
         }

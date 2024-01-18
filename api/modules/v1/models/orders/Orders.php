@@ -70,4 +70,15 @@ class Orders extends BaseActiveRecord
         $this->on(self::EVENT_BEFORE_INSERT, [$this, 'setSerializeArray'], 'order_info');
         $this->on(self::EVENT_BEFORE_UPDATE, [$this, 'setSerializeArray'], 'order_info');
     }
+
+    public function fields()
+    {
+        return array_merge(
+            parent::fields(),
+            [
+                'created_at',
+                'updated_at'
+            ]
+        );
+    }
 }

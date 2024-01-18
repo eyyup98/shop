@@ -146,4 +146,23 @@ class ProductsController extends BaseApiController
 
         return $list->all() ?? [];
     }
+
+    function actionForCart()
+    {
+        $rawBody = json_decode(Yii::$app->request->rawBody, true);
+        $params = $rawBody['params'];
+
+        if (!empty($params['productsList'])) {
+            $ids = implode(',', $params['productsList']);
+
+            $products = Products::find()->select(['id', 'name', 'price', 'discount'])
+                ->where("id in ($ids)")->asArray()->all();
+
+            foreach ($products as &$product) {
+                $product['img'] = ProductsImg::findOne(['product_id' => $product['id']])->src ?? null;
+            }
+        }
+
+        return $products ?? [];
+    }
 }
