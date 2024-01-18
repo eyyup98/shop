@@ -17,10 +17,11 @@ class OrdersController extends BaseApiController
         $get = Yii::$app->request->get();
 
         $count = Orders::find()->count();
+        $tab = 10;
 
         $orders = Orders::find()->orderBy(['id' => SORT_DESC])
-            ->limit(10)
-            ->offset(($get['pagination'] - 1) * 5)
+            ->limit($tab)
+            ->offset(($get['pagination'] - 1) * $tab)
             ->asArray()->all();
 
         foreach ($orders as &$order) {
